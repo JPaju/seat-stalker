@@ -43,3 +43,23 @@ The application could be run locally either using SBT or Azure Functions Core To
 	```
 
 6. Run `func start`
+
+
+## Deployment
+
+The infrastructure is managed with Terraform. Terraform state is stored in Azure Storage Account.
+
+* To run terraform locally, set environment variable `ARM_ACCESS_KEY`, [more information](https://learn.microsoft.com/en-us/azure/developer/terraform/store-state-in-azure-storage)
+* Create file `local.terraform.tfvars` and add the following configuration:
+	```
+	telegram_chatId = "<chat-id>"
+	telegram_token = "<token>"
+	```
+* Run all terraform commands with `--var-file=local.terraform.tfvars` flag
+
+### Required GitHub secrets
+* `TFSTATE_STORAGE_ACCESS_KEY`
+* `TELEGRAM_CHAT_ID`
+* `TELEGRAM_TOKEN`
+* `AZURE_EMAIL_ALERT_RECIPIENT`
+* `AZURE_FUNCTIONAPP_PUBLISH_PROFILE`
