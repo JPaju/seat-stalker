@@ -54,6 +54,7 @@ The infrastructure is managed with Terraform. Terraform state is stored in Azure
 	```
 	telegram_chatId = "<chat-id>"
 	telegram_token = "<token>"
+	email_alert_recipient = "<email>"
 	```
 * Run all terraform commands with `--var-file=local.terraform.tfvars` flag
 
