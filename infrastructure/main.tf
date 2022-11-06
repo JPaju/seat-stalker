@@ -8,11 +8,6 @@ terraform {
   }
 
   backend "azurerm" {
-    # resource_group_name  = var.state_rg_name
-    # storage_account_name = var.state_storage_account_name
-    # container_name       = var.state_container_name
-    # key                  = var.state_storage_key
-
     resource_group_name  = "rg-seat-stalker"
     storage_account_name = "safuncseatstalker"
     container_name       = "tfstate"
@@ -24,15 +19,11 @@ provider "azurerm" {
   features {}
 }
 
-# TODO: Telegram secrets and email to Github Secrets
-# tfstate
-# workflow.yml
-
 locals {
-  # project_name = "seatstalker"
-  # env_name     = terraform.workspace == "default" ? "" : "${terraform.workspace}"
-  project_name = "seat-stalker"
-  env_name     = ""
+  project_name = "seatstalker"
+  env_name     = terraform.workspace == "default" ? "" : "${terraform.workspace}"
+  # project_name = "seat-stalker"
+  # env_name     = ""
 }
 
 resource "azurerm_resource_group" "az_resource_group" {
@@ -41,8 +32,8 @@ resource "azurerm_resource_group" "az_resource_group" {
 }
 
 resource "azurerm_storage_account" "az_storage_account" {
-  # name                     = "safunc${local.project_name}${local.env_name}"
-  name                     = "safuncseatstalker"
+  name = "safunc${local.project_name}${local.env_name}"
+  # name                     = "safuncseatstalker"
   resource_group_name      = azurerm_resource_group.az_resource_group.name
   location                 = azurerm_resource_group.az_resource_group.location
   account_tier             = "Standard"
@@ -63,7 +54,7 @@ resource "azurerm_service_plan" "az_app_service_plan" {
 }
 
 resource "azurerm_linux_function_app" "az_function_app" {
-  name                = "func-${local.project_name}"
+  name                = "func-${local.project_name}-${local.env_name}"
   resource_group_name = azurerm_resource_group.az_resource_group.name
   location            = azurerm_resource_group.az_resource_group.location
 
@@ -78,7 +69,6 @@ resource "azurerm_linux_function_app" "az_function_app" {
     "WEBSITE_MOUNT_ENABLED" = "1"
     "telegram_chatid"       = var.telegram_chat_id
     "telegram_token"        = var.telegram_token
-    # "xxWEBSITE_RUN_FROM_PACKAGExx" = "https://safuncseatstalker.blob.core.windows.net/function-releases/20221021224617-d4d2d8ce-3f19-4984-b056-b033257d5b5b.zip?sv=2018-03-28&sr=b&sig=t4jiEagnOwVwS7b%2BefZESKS5V5vauu0XOKCv0iPF2Xo%3D&st=2022-10-21T22%3A41%3A32Z&se=2032-10-21T22%3A46%3A32Z&sp=r"
   }
 
   https_only              = true
@@ -88,7 +78,9 @@ resource "azurerm_linux_function_app" "az_function_app" {
     application_insights_connection_string = azurerm_application_insights.az_application_insights.connection_string
     application_insights_key               = azurerm_application_insights.az_application_insights.instrumentation_key
 
-    ftps_state = "Disabled"
+    ftps_state      = "Disabled"
+    always_on       = false
+    app_scale_limit = 5
 
     application_stack {
       java_version = "17"
@@ -149,7 +141,8 @@ resource "azurerm_consumption_budget_resource_group" "az_consumption_budget_reso
   time_grain = "Monthly"
 
   time_period {
-    start_date = "2022-10-01T00:00:00Z"
+    # start_date = formatdate("YYYY-MM-01'T'00:00:00Z", timestamp()) // This will always recreate the budget
+    start_date = "2022-11-01T00:00:00Z" // Start date must be in the current month
     end_date   = "2030-10-01T00:00:00Z"
   }
 
@@ -171,19 +164,20 @@ resource "azurerm_consumption_budget_resource_group" "az_consumption_budget_reso
 }
 
 resource "azurerm_monitor_metric_alert" "az_monitor_metric_alert" {
-  name                = "Timer function failed"
-  description         = "Action will be triggered when timer function fails"
+  name                = "Seat stalker failed"
+  description         = "Action will be triggered when seat stalker reports exception"
   resource_group_name = azurerm_resource_group.az_resource_group.name
   scopes              = [azurerm_application_insights.az_application_insights.id]
   frequency           = "PT1H"
   window_size         = "PT1H"
 
   criteria {
-    metric_namespace = "Azure.ApplicationInsights"
-    metric_name      = "SeatStalkerTimerFunction Failures"
-    aggregation      = "Total"
-    operator         = "GreaterThanOrEqual"
-    threshold        = 1
+    metric_namespace       = "Azure.ApplicationInsights"
+    metric_name            = "Exceptions"
+    aggregation            = "Count"
+    operator               = "GreaterThanOrEqual"
+    threshold              = 1
+    skip_metric_validation = true
   }
 
   action {

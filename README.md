@@ -59,7 +59,10 @@ The infrastructure is managed with Terraform. Terraform state is stored in Azure
 * Run all terraform commands with `--var-file=local.terraform.tfvars` flag
 
 ### Required GitHub secrets
-* `TFSTATE_STORAGE_ACCESS_KEY`
+* `ARM_CLIENT_ID`
+* `ARM_CLIENT_SECRET`
+* `ARM_SUBSCRIPTION_ID`
+* `ARM_TENANT_ID`
 * `TELEGRAM_CHAT_ID`
 * `TELEGRAM_TOKEN`
 * `AZURE_EMAIL_ALERT_RECIPIENT`
