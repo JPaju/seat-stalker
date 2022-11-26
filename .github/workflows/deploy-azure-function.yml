@@ -46,9 +46,9 @@ jobs:
         id: select
         run: terraform workspace select fresh
 
-      - name: Terraform Plan
-        id: plan
-        run: terraform plan -no-color -input=false
+      # - name: Terraform Plan
+      #   id: plan
+      #   run: terraform plan -no-color -input=false
 
       - name: Terraform Refresh
         id: refresh
@@ -69,8 +69,8 @@ jobs:
       - name: Terraform Output
         id: output
         run: |
-          echo "rg_name=$(terraform output -raw rg_name)" >> $GITHUB_OUTPUT
-          echo "function_app_name=$(terraform output -raw function_app_name)" >> $GITHUB_OUTPUT
+          echo "resource-group=$(terraform output -raw rg_name)" >> $GITHUB_OUTPUT
+          echo "function-app-name=$(terraform output -raw function_app_name)" >> $GITHUB_OUTPUT
 
       - name: Testing2
         id: testing2
@@ -100,8 +100,8 @@ jobs:
         id: testing2
         run: |
           echo ${{ toJson(needs.deploy-infrastructure.outputs) }}
-          echo ${{needs.deploy-infrastructure.outputs.rg_name}}
-          echo ${{needs.deploy-infrastructure.outputs.function_app_name}}
+          echo ${{needs.deploy-infrastructure.outputs.resource-group}}
+          echo ${{needs.deploy-infrastructure.outputs.function-app-name}}
           $(az functionapp show --resource-group ${{needs.deploy-infrastructure.outputs.resource-group}} --name ${{needs.deploy-infrastructure.outputs.function-app-name}} --query "siteConfig.linuxFxVersion")
 
   # build-and-deploy:
