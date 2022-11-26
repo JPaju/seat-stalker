@@ -119,6 +119,7 @@ jobs:
         id: get-publish-profile
         run: |
           echo "publish-profile=$(az functionapp deployment list-publishing-profiles --resource-group ${{needs.deploy-infrastructure.outputs.resource-group}} --name ${{needs.deploy-infrastructure.outputs.function-app-name}} --xml)" >> $GITHUB_OUTPUT
+          echo "::add-mask::${{ steps.get-publish-profile.outputs.publish-profile }}"
 
       - name: Deploy to Azure
         uses: Azure/functions-action@v1
