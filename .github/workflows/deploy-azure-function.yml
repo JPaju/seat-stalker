@@ -3,12 +3,15 @@ on:
   workflow_dispatch:
 
 jobs:
+  # test:
+  #   uses: ./.github/workflows/ci.yml
+
   deploy-infrastructure:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./infrastructure
-    needs: test
+    # needs: test
     outputs:
       resource-group: ${{ steps.apply.outputs.rg_name }}
       function-app-name: ${{ steps.apply.outputs.function_app_name }}
