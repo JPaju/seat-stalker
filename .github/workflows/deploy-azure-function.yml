@@ -3,9 +3,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  # test:
-  #   uses: ./.github/workflows/ci.yml
-
   deploy-infrastructure:
     runs-on: ubuntu-latest
     defaults:
