@@ -13,8 +13,8 @@ jobs:
         working-directory: ./infrastructure
     # needs: test
     outputs:
-      resource-group: ${{ steps.apply.outputs.rg_name }}
-      function-app-name: ${{ steps.apply.outputs.function_app_name }}
+      resource-group: ${{ steps.output.outputs.rg_name }}
+      function-app-name: ${{ steps.output.outputs.function_app_name }}
     env:
       ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
       ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
@@ -69,8 +69,8 @@ jobs:
       - name: Terraform Output
         id: output
         run: |
-          echo "resource-group=$(terraform output -raw rg_name)" >> $GITHUB_OUTPUT
-          echo "function-app-name=$(terraform output -raw function_app_name)" >> $GITHUB_OUTPUT
+          echo "rg_name=$(terraform output -raw rg_name)" >> $GITHUB_OUTPUT
+          echo "function_app_name=$(terraform output -raw function_app_name)" >> $GITHUB_OUTPUT
 
       - name: Testing2
         id: testing2
