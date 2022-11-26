@@ -53,9 +53,9 @@ jobs:
         id: refresh
         run: terraform refresh
 
-      - name: Get outputs
-        uses: dflook/terraform-output@v1
-        id: output
+      # - name: Get outputs
+      #   uses: dflook/terraform-output@v1
+      #   id: output
 
       # - name: Terraform Apply
       #   id: apply
@@ -65,11 +65,11 @@ jobs:
       #     echo "rg_name=$(terraform output rg_name)" >> $GITHUB_OUTPUT
       #     echo "function_app_name=$(terraform output function_app_name)" >> $GITHUB_OUTPUT
 
-      # - name: Terraform Output
-      #   id: output
-      #   run: |
-      #     echo "rg_name=$(terraform output -raw rg_name)" >> $GITHUB_OUTPUT
-      #     echo "function_app_name=$(terraform output -raw function_app_name)" >> $GITHUB_OUTPUT
+      - name: Terraform Output
+        id: output
+        run: |
+          echo "rg_name=$(terraform output -raw rg_name)" >> $GITHUB_OUTPUT
+          echo "function_app_name=$(terraform output -raw function_app_name)" >> $GITHUB_OUTPUT
 
   test-az-cli:
     runs-on: ubuntu-latest
@@ -93,8 +93,9 @@ jobs:
       - name: Testing2
         id: testing2
         run: |
-          echo ${{needs.deploy-infrastructure.outputs.resource-group}}
-          echo ${{needs.deploy-infrastructure.outputs.function-app-name}}
+          echo ${{needs.deploy-infrastructure.outputs}}
+          echo ${{needs.deploy-infrastructure.outputs.rg_name}}
+          echo ${{needs.deploy-infrastructure.outputs.function_app_name}}
           $(az functionapp show --resource-group ${{needs.deploy-infrastructure.outputs.resource-group}} --name ${{needs.deploy-infrastructure.outputs.function-app-name}} --query "siteConfig.linuxFxVersion")
 
   # build-and-deploy:
