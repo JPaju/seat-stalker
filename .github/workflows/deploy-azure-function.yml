@@ -72,6 +72,11 @@ jobs:
           echo "rg_name=$(terraform output -raw rg_name)" >> $GITHUB_OUTPUT
           echo "function_app_name=$(terraform output -raw function_app_name)" >> $GITHUB_OUTPUT
 
+      - name: Testing2
+        id: testing2
+        run: |
+          echo ${{ toJson(steps.output.outputs) }}
+
   test-az-cli:
     runs-on: ubuntu-latest
     # needs: [test, deploy-infrastructure]
