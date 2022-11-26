@@ -75,11 +75,6 @@ jobs:
     runs-on: ubuntu-latest
     # needs: [test, deploy-infrastructure]
     needs: [deploy-infrastructure]
-    env:
-      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
     steps:
       - name: "Checkout GitHub Action"
         uses: actions/checkout@v3
@@ -87,12 +82,10 @@ jobs:
       - name: "Test Azure CLI"
         uses: azure/login@v1
         with:
-          creds:
-            '{
-              "clientId":"${{ secrets.ARM_CLIENT_ID }}",
-              "clientSecret":"${{ secrets.ARM_CLIENT_SECRET }}",
-              "subscriptionId":"${{ secrets.ARM_SUBSCRIPTION_ID }}"
-            }'
+          client-id: ${{ secrets.ARM_CLIENT_ID }}
+          client-secret: ${{ secrets.ARM_CLIENT_SECRET }}
+          tenant-id: ${{ secrets.ARM_TENANT_ID }}
+          subscription-id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
 
       - name: Testing
         id: testing
