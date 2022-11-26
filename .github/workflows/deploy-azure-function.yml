@@ -50,21 +50,13 @@ jobs:
       #   id: plan
       #   run: terraform plan -no-color -input=false
 
-      - name: Terraform Refresh
-        id: refresh
-        run: terraform refresh
+      # - name: Terraform Refresh
+      #   id: refresh
+      #   run: terraform refresh
 
-      # - name: Get outputs
-      #   uses: dflook/terraform-output@v1
-      #   id: output
-
-      # - name: Terraform Apply
-      #   id: apply
-      #   # run: terraform apply -auto-approve -input=false
-      #   run: |
-      #     terraform apply -auto-approve -input=false
-      #     echo "rg_name=$(terraform output rg_name)" >> $GITHUB_OUTPUT
-      #     echo "function_app_name=$(terraform output function_app_name)" >> $GITHUB_OUTPUT
+      - name: Terraform Apply
+        id: apply
+        run: terraform apply -auto-approve -input=false
 
       - name: Terraform Output
         id: output
@@ -72,10 +64,38 @@ jobs:
           echo "rg_name=$(terraform output -raw rg_name)" >> $GITHUB_OUTPUT
           echo "function_app_name=$(terraform output -raw function_app_name)" >> $GITHUB_OUTPUT
 
-  test-az-cli:
+  # test-az-cli:
+  #   runs-on: ubuntu-latest
+  #   # needs: [test, deploy-infrastructure]
+  #   needs: [deploy-infrastructure]
+  #   steps:
+  #     - name: "Checkout GitHub Action"
+  #       uses: actions/checkout@v3
+
+  #     - name: AZ CLI Login
+  #       id: az-login
+  #       run: |
+  #         az login --service-principal -u ${{ secrets.ARM_CLIENT_ID }} -p ${{ secrets.ARM_CLIENT_SECRET }} --tenant ${{ secrets.ARM_TENANT_ID }}
+  #         az account set --subscription ${{ secrets.ARM_SUBSCRIPTION_ID }}
+
+  #     - name: Testing1
+  #       id: testing1
+  #       run: |
+  #         az functionapp show --resource-group "rg-seat-stalker" --name "func-seat-stalker" --query "siteConfig.linuxFxVersion"
+
+  #     - name: Testing2
+  #       id: testing2
+  #       run: |
+  #         $(az functionapp show --resource-group ${{needs.deploy-infrastructure.outputs.resource-group}} --name ${{needs.deploy-infrastructure.outputs.function-app-name}} --query "siteConfig.linuxFxVersion")
+
+  build-and-deploy:
     runs-on: ubuntu-latest
     # needs: [test, deploy-infrastructure]
     needs: [deploy-infrastructure]
+    env:
+      # AZURE_FUNCTIONAPP_NAME: func-seat-stalker
+      PACKAGE_DIRECTORY: "./azure-functions"
+      JAVA_VERSION: "17"
     steps:
       - name: "Checkout GitHub Action"
         uses: actions/checkout@v3
@@ -86,43 +106,19 @@ jobs:
           az login --service-principal -u ${{ secrets.ARM_CLIENT_ID }} -p ${{ secrets.ARM_CLIENT_SECRET }} --tenant ${{ secrets.ARM_TENANT_ID }}
           az account set --subscription ${{ secrets.ARM_SUBSCRIPTION_ID }}
 
-      - name: Testing1
-        id: testing1
-        run: |
-          az functionapp show --resource-group "rg-seat-stalker" --name "func-seat-stalker" --query "siteConfig.linuxFxVersion"
+      - name: Setup JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
 
-      - name: Testing2
-        id: testing2
-        run: |
-          $(az functionapp show --resource-group ${{needs.deploy-infrastructure.outputs.resource-group}} --name ${{needs.deploy-infrastructure.outputs.function-app-name}} --query "siteConfig.linuxFxVersion")
+      - name: Build JAR
+        run: sbt -v assembly
 
-  # build-and-deploy:
-  #   runs-on: ubuntu-latest
-  #   needs: [test, deploy-infrastructure]
-  #   env:
-  #     # AZURE_FUNCTIONAPP_NAME: func-seat-stalker
-  #     PACKAGE_DIRECTORY: "./azure-functions"
-  #     JAVA_VERSION: "17"
-  #   steps:
-  #     - name: "Checkout GitHub Action"
-  #       uses: actions/checkout@v3
-
-  #     - name: Setup JDK
-  #       uses: actions/setup-java@v3
-  #       with:
-  #         distribution: temurin
-  #         java-version: ${{ env.JAVA_VERSION }}
-
-  #     - name: Build JAR
-  #       run: sbt -v assembly
-
-  #     - name: Deploy to Azure
-  #       uses: Azure/functions-action@v1
-  #       with:
-  #         app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-  #         package: ${{ env.PACKAGE_DIRECTORY }}
-  #         # publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
-  #         publish-profile:
-  #           $(az functionapp deployment list-publishing-profiles --resource-group
-  #           ${{needs.deploy-infrastructure.outputs.resource-group}} --name
-  #           ${{needs.deploy-infrastructure.outputs.function-app-name}} --xml)
+      - name: Deploy to Azure
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+          package: ${{ env.PACKAGE_DIRECTORY }}
+          publish-profile: $(az functionapp deployment list-publishing-profiles ---resource-group ${{needs.deploy-infrastructure.outputs.resource-group}} --name ${{needs.deploy-infrastructure.outputs.function-app-name}} --xml)
+          # publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
