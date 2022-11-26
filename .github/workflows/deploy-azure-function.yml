@@ -3,8 +3,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
-    uses: ./.github/workflows/ci.yml
+  # test:
+  #   uses: ./.github/workflows/ci.yml
 
   deploy-infrastructure:
     runs-on: ubuntu-latest
@@ -64,8 +64,8 @@ jobs:
       - name: Terraform Output
         id: output
         run: |
-          echo "rg_name=$(terraform output rg_name)" >> $GITHUB_OUTPUT
-          echo "function_app_name=$(terraform output function_app_name)" >> $GITHUB_OUTPUT
+          echo "rg_name=$(terraform output -raw rg_name)" >> $GITHUB_OUTPUT
+          echo "function_app_name=$(terraform output -raw function_app_name)" >> $GITHUB_OUTPUT
 
   test-az-cli:
     runs-on: ubuntu-latest
