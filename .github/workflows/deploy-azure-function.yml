@@ -93,7 +93,7 @@ jobs:
       - name: Testing2
         id: testing2
         run: |
-          echo ${{needs.deploy-infrastructure.outputs}}
+          echo ${{ toJson(needs.deploy-infrastructure.outputs) }}
           echo ${{needs.deploy-infrastructure.outputs.rg_name}}
           echo ${{needs.deploy-infrastructure.outputs.function_app_name}}
           $(az functionapp show --resource-group ${{needs.deploy-infrastructure.outputs.resource-group}} --name ${{needs.deploy-infrastructure.outputs.function-app-name}} --query "siteConfig.linuxFxVersion")
