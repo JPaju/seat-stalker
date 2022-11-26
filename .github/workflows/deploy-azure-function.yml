@@ -79,20 +79,21 @@ jobs:
       - name: "Checkout GitHub Action"
         uses: actions/checkout@v3
 
-      # - name: "Test Azure CLI"
-      #   uses: azure/login@v1
-      #   with:
-      #     client-id: ${{ secrets.ARM_CLIENT_ID }}
-      #     client-secret: ${{ secrets.ARM_CLIENT_SECRET }}
-      #     tenant-id: ${{ secrets.ARM_TENANT_ID }}
-      #     subscription-id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-
-      - name: Testing
-        id: testing
+      - name: AZ CLI Login
+        id: az-login
         run: |
           az login --service-principal -u ${{ secrets.ARM_CLIENT_ID }} -p ${{ secrets.ARM_CLIENT_SECRET }} --tenant ${{ secrets.ARM_TENANT_ID }}
           az account set --subscription ${{ secrets.ARM_SUBSCRIPTION_ID }}
+
+      - name: Testing1
+        id: testing1
+        run: |
           az functionapp show --resource-group "rg-seat-stalker" --name "func-seat-stalker" --query "siteConfig.linuxFxVersion"
+
+      - name: Testing2
+        id: testing2
+        run: |
+          $(az functionapp show --resource-group ${{needs.deploy-infrastructure.outputs.resource-group}} --name ${{needs.deploy-infrastructure.outputs.function-app-name}} --query "siteConfig.linuxFxVersion")
 
   # build-and-deploy:
   #   runs-on: ubuntu-latest
