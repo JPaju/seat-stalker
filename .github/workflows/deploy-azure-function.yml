@@ -118,7 +118,7 @@ jobs:
       - name: Get publish profile
         id: get-publish-profile
         run: |
-          publish-profile=$(az functionapp deployment list-publishing-profiles --resource-group ${{needs.deploy-infrastructure.outputs.resource-group}} --name ${{needs.deploy-infrastructure.outputs.function-app-name}} --xml)
+          echo "publish-profile=$(az functionapp deployment list-publishing-profiles --resource-group ${{needs.deploy-infrastructure.outputs.resource-group}} --name ${{needs.deploy-infrastructure.outputs.function-app-name}} --xml)"
           echo "$publish-profile"
           echo "::add-mask::$publish-profile"
           echo "publish-profile='$(publish-profile)'" >> $GITHUB_OUTPUT
