@@ -117,7 +117,6 @@ jobs:
       # Masking the publish profile seems to be impossible with GitHub Actions.
       # Either the masking itself prints the text we want to mask or the masking is not applied at all.
       # When the masking is applied, the azure-functions step also fails because the publihs profile format is not correct due to masking.
-
       # Here are some (maybe) related links:
       # https://github.com/Azure/functions-action/issues/116
       # https://github.com/hashicorp/terraform-provider-azurerm/issues/8739
@@ -130,9 +129,7 @@ jobs:
 
       - name: Mask publish profile
         id: mask-publish-profile
-        run: |
-          publish_profile = ${{ steps.get-publish-profile.outputs.publish-profile }}
-          echo "::add-mask::$(publish_profile)"
+        run: echo "::add-mask::${{ steps.get-publish-profile.outputs.publish-profile }}"
 
       - name: Deploy to Azure
         uses: Azure/functions-action@v1
