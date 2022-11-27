@@ -93,7 +93,6 @@ jobs:
     # needs: [test, deploy-infrastructure]
     needs: [deploy-infrastructure]
     env:
-      # AZURE_FUNCTIONAPP_NAME: func-seat-stalker
       PACKAGE_DIRECTORY: "./azure-functions"
       JAVA_VERSION: "17"
     steps:
@@ -127,11 +126,13 @@ jobs:
       # https://github.blog/changelog/2022-10-11-github-actions-deprecating-save-state-and-set-output-commands/
       - name: Get publish profile
         id: get-publish-profile
-        run: echo "{publish-profile}={$(az functionapp deployment list-publishing-profiles --resource-group ${{needs.deploy-infrastructure.outputs.resource-group}} --name ${{needs.deploy-infrastructure.outputs.function-app-name}} --xml)}" >> $GITHUB_OUTPUT
+        run: echo "publish-profile=$(az functionapp deployment list-publishing-profiles --resource-group ${{needs.deploy-infrastructure.outputs.resource-group}} --name ${{needs.deploy-infrastructure.outputs.function-app-name}} --xml)" >> $GITHUB_OUTPUT
 
       - name: Mask publish profile
         id: mask-publish-profile
-        run: echo "::add-mask::${{ steps.get-publish-profile.outputs.publish-profile }}"
+        run: |
+          publish_profile = ${{ steps.get-publish-profile.outputs.publish-profile }}
+          echo "::add-mask::$(publish_profile)"
 
       - name: Deploy to Azure
         uses: Azure/functions-action@v1
@@ -139,4 +140,3 @@ jobs:
           app-name: ${{ needs.deploy-infrastructure.outputs.function-app-name }}
           package: ${{ env.PACKAGE_DIRECTORY }}
           publish-profile: ${{ steps.get-publish-profile.outputs.publish-profile }}}}
-          # publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
