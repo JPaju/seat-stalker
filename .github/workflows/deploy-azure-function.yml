@@ -100,12 +100,6 @@ jobs:
       - name: "Checkout GitHub Action"
         uses: actions/checkout@v3
 
-      - name: Get SWA deployment token
-        uses: azure/CLI@v1
-        with:
-          inlineScript: |
-            az functionapp deployment list-publishing-profiles --resource-group ${{needs.deploy-infrastructure.outputs.resource-group}} --name ${{needs.deploy-infrastructure.outputs.function-app-name}} --xml
-
       - name: AZ CLI Login
         id: az-login
         run: |
@@ -123,11 +117,14 @@ jobs:
 
       - name: Get publish profile
         id: get-publish-profile
-        run: echo "publish-profile=$(az functionapp deployment list-publishing-profiles --resource-group ${{needs.deploy-infrastructure.outputs.resource-group}} --name ${{needs.deploy-infrastructure.outputs.function-app-name}} --xml)" >> $GITHUB_OUTPUT
+        run: |
+          publish-profile=$(az functionapp deployment list-publishing-profiles --resource-group ${{needs.deploy-infrastructure.outputs.resource-group}} --name ${{needs.deploy-infrastructure.outputs.function-app-name}} --xml)
+          echo "::add-mask::$publish-profile"
+          echo "publish-profile::$publish-profile" >> $GITHUB_OUTPUT
 
-      - name: Mask publish profile
-        id: mask-publish-profile
-        run: echo "::add-mask::${{ steps.get-publish-profile.outputs.publish-profile }}"
+      # - name: Mask publish profile
+      #   id: mask-publish-profile
+      #   run: echo "::add-mask::${{ steps.get-publish-profile.outputs.publish-profile }}"
 
       - name: Deploy to Azure
         uses: Azure/functions-action@v1
